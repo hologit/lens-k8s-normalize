@@ -1,11 +1,12 @@
 pkg_name=lens-k8s-normalize
 pkg_origin=holo
-pkg_version="0.1.0"
+pkg_version="0.1.1"
 pkg_maintainer="Chris Alfano <chris@jarv.us>"
 pkg_license=("MIT")
 pkg_build_deps=(
 )
 pkg_deps=(
+  core/git
   core/node
 )
 pkg_bin_dirs=(bin)
