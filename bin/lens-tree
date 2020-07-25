@@ -1,0 +1,89 @@
+#!/bin/node
+
+const { Repo } = require('hologit');
+const yaml = require('js-yaml');
+// const TOML = require('@iarna/toml');
+// const fs = require('mz/fs');
+// const path = require('path');
+// const glob = require('mz-modules/glob');
+// const execa = require('execa');
+
+
+outputResult(lensTree(process.argv[2]));
+
+async function lensTree(treeHash) {
+
+    // load env/input
+    const repo = await Repo.getFromEnvironment();
+    const git = await repo.getGit();
+    const tree = await repo.createTreeFromRef(treeHash);
+    // const requiresTree = await tree.getChild('composer-requires');
+
+
+    // init output
+    const outputTree = repo.createTree();
+
+
+    // check env/input
+    if (!tree) {
+        return outputTree;
+    }
+
+    if (!tree.isTree) {
+        throw new Error('input must be a tree');
+    }
+
+
+    // configure js-yaml dump options
+    const yamlDumpOptions = {
+        sortKeys: true // could be a function to sort apiVersion, kind, metadata, spec, ...
+    };
+
+
+    // iterate input
+    const blobs = await tree.getBlobMap();
+    for (const blobPath in blobs) {
+        const blob = blobs[blobPath];
+
+        const objects = await new Promise(async (resolve, reject) => {
+            try {
+                resolve(yaml.safeLoadAll(await blob.read()));
+            } catch (err) {
+                reject(err);
+            }
+        });
+
+        for (const object of objects) {
+            if (!object) {
+                // null values indicate empty documents
+                continue;
+            }
+
+            if (!object.metadata) {
+                console.log(object)
+            }
+
+            const { kind, metadata: { name, namespace } } = object;
+            const objectPath = `${namespace || '_'}/${kind}/${name}.yaml`;
+            await outputTree.writeChild(objectPath, yaml.safeDump(object, ))
+            console.error(`${blobPath}→${objectPath}`);
+        }
+    }
+
+
+    return outputTree;
+}
+
+
+async function outputResult(result) {
+    result = await result;
+
+    if (result.isTree) {
+        console.log(await result.write());
+        process.exit(0);
+        return;
+    }
+
+    console.error('no result');
+    process.exit(1);
+}
