@@ -48,7 +48,7 @@ async function lensTree(treeHash) {
 
             const { kind, metadata: { name, namespace } } = object;
             const objectPath = `${namespace || '_'}/${kind}/${name}.yaml`;
-            await outputTree.writeChild(objectPath, yaml.safeDump(object, ))
+            await outputTree.writeChild(objectPath, yaml.safeDump(object, yamlDumpOptions))
             console.error(`${blobPath}→${objectPath}`);
         }
     }
