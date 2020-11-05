@@ -38,7 +38,14 @@ async function lensTree(treeHash) {
     for (const blobPath in blobs) {
         const blob = blobs[blobPath];
 
-        const objects = yaml.safeLoadAll(await blob.read());
+        let objects;
+
+        try {
+            objects = yaml.safeLoadAll(await blob.read());
+        } catch (err) {
+            console.error(`Failed to parse: ${blobPath}\n\n${err}`);
+            process.exit(1);
+        }
 
         for (const object of objects) {
             if (!object) {
