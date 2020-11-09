@@ -47,16 +47,42 @@ async function lensTree(treeHash) {
             process.exit(1);
         }
 
+        let objectIndex = 1;
         for (const object of objects) {
             if (!object) {
                 // null values indicate empty documents
                 continue;
             }
 
-            const { kind, metadata: { name, namespace } } = object;
+            const { kind, metadata } = object;
+
+            if (!kind) {
+                console.error(`Object ${objectIndex} in ${blobPath} is missing property: kind`);
+                process.exit(1);
+            }
+
+            if (!metadata) {
+                console.error(`Object ${objectIndex} in ${blobPath} is missing property: metadata`);
+                process.exit(1);
+            }
+
+            const { name, namespace } = metadata;
+
+            if (!name) {
+                console.error(`Object ${objectIndex} in ${blobPath} is missing property: metadata.name`);
+                process.exit(1);
+            }
+
+            if (!namespace) {
+                console.error(`Object ${objectIndex} in ${blobPath} is missing property: metadata.namespace`);
+                process.exit(1);
+            }
+
+
             const objectPath = `${namespace || '_'}/${kind}/${name}.yaml`;
             await outputTree.writeChild(objectPath, yaml.safeDump(object, yamlDumpOptions))
             console.error(`${blobPath}→${objectPath}`);
+            objectIndex++;
         }
     }
 
