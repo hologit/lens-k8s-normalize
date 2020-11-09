@@ -73,12 +73,6 @@ async function lensTree(treeHash) {
                 process.exit(1);
             }
 
-            if (!namespace) {
-                console.error(`Object ${objectIndex} in ${blobPath} is missing property: metadata.namespace`);
-                process.exit(1);
-            }
-
-
             const objectPath = `${namespace || '_'}/${kind}/${name}.yaml`;
             await outputTree.writeChild(objectPath, yaml.safeDump(object, yamlDumpOptions))
             console.error(`${blobPath}→${objectPath}`);
