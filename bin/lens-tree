@@ -61,6 +61,11 @@ async function lensTree(treeHash) {
                 process.exit(1);
             }
 
+            if (kind == 'ConfigMapList') {
+                objects.push(...object.items);
+                continue;
+            }
+
             if (!metadata) {
                 console.error(`Object ${objectIndex} in ${blobPath} is missing property: metadata`);
                 process.exit(1);
